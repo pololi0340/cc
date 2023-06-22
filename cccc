@@ -1,142 +1,135 @@
-Sub GenererDesDonnees()
-
-    Dim Bucket As Worksheet
-    Dim rng As Range
-    Dim i As Long
-    Dim Comptes As Variant
-    Dim Devises As Variant
-    Dim Solde1 As Double
-    Dim Solde2 As Double
-
-    ' Assurez-vous que le nom de la feuille correspond
-    Set Bucket = ThisWorkbook.Sheets("Bucket")
-
-    ' Initialisation des tableaux
-    Comptes = Array(119, 284, 393, 300, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000)
-    Devises = Array("EUR", "GBP", "CHF", "USD")
-
-    ' Efface les données actuelles
-    Bucket.Range("C2:H201").ClearContents
-
-    ' Génération de nouvelles données
-    For i = 2 To 201
-        ' Choix aléatoire du numéro de compte et de la devise
-        Bucket.Cells(i, "C").Value = Comptes(Int((UBound(Comptes) - LBound(Comptes) + 1) * Rnd + LBound(Comptes)))
-        Bucket.Cells(i, "F").Value = Devises(Int((UBound(Devises) - LBound(Devises) + 1) * Rnd + LBound(Devises)))
-        
-        ' Génération aléatoire des soldes à 1 et 2 mois
-        Solde1 = Int((3000 - 1000 + 1) * Rnd + 1000)
-        Solde2 = Int((5000 - 3000 + 1) * Rnd + 3000)
-        
-        Bucket.Cells(i, "G").Value = Solde1
-        Bucket.Cells(i, "H").Value = Solde2
-    Next i
-
-End Sub
-
-
-
-Sub GenererDetails()
-
-    Dim Bucket As Worksheet
-    Dim Detail As Worksheet
-    Dim categoryRowCounts As Variant
-    Dim i As Long, j As Long
-    Dim Compte As Integer
+Sub CreerStructureDeDonnees()
+    ' Définir les variables
+    Dim ws As Worksheet
+    Dim i As Integer
+    Dim j As Integer
+    Dim k As Integer
+    Dim grandCompte As String
+    Dim numCompte As Integer
     Dim Devise As String
-    Dim accountCollection As Collection
-    Dim key As String
+    Dim lettre As String
+    Dim somme As Double
+    Dim numSousComptes As Integer
+    Dim devises() As Variant
+    Dim lettres() As Variant
     
-    ' Assurez-vous que le nom de la feuille correspond
-    Set Bucket = ThisWorkbook.Sheets("Bucket")
-    Set Detail = ThisWorkbook.Sheets("detail")
+    ' Assigner la feuille active à la variable ws
+    Set ws = ActiveSheet
     
-    ' Efface les données actuelles
-    Detail.Cells.ClearContents
+    ' Vider la feuille active
+    ws.Cells.Clear
     
-    ' Initialisation des grands comptes
-    Detail.Cells(1, 1).Value = "forwardbond"
-    Detail.Cells(1, 3).Value = "cat1"
-    Detail.Cells(1, 5).Value = "cat2"
-    Detail.Cells(1, 7).Value = "cat3"
-    Detail.Cells(1, 9).Value = "cat4"
-    Detail.Cells(1, 11).Value = "cat5"
-    Detail.Cells(1, 13).Value = "cat6"
-    Detail.Cells(1, 15).Value = "cat7"
+    ' Initialiser les tableaux
+    devises = Array("EUR", "USD", "GBP", "JPY", "CHF", "CAD")  ' Ajout de JPY, CHF, et CAD
+    lettres = Array("A", "T")
     
-    ' Initialisation des compteurs de lignes pour chaque catégorie
-    categoryRowCounts = Array(2, 2, 2, 2, 2, 2, 2, 2)
+    ' Ligne de départ
+    i = 1
     
-    ' Initialisation de la collection des comptes
-    Set accountCollection = New Collection
-    
-    ' Pour chaque ligne de données dans la feuille "Bucket"
-    For i = 2 To 201
-        Compte = Bucket.Cells(i, "C").Value
-        Devise = Bucket.Cells(i, "F").Value
-        key = Compte & "_" & Devise
+    ' Créer 7 grands comptes
+    For j = 1 To 7
+        ' Créer le nom du grand compte
+        grandCompte = "cat" & j
+        ws.Cells(i, 1).Value = grandCompte
         
-        ' Si cette combinaison de compte et de devise n'a pas encore été assignée
-        On Error Resume Next
-        accountCollection.Add key, key
-        If Err.Number = 0 Then
-            ' Choix aléatoire d'une catégorie pour ce compte
-            j = Int((7 - 1 + 1) * Rnd + 1)
+        ' Générer un nombre aléatoire de sous-comptes pour chaque grand compte
+        numSousComptes = Int((10 - 1 + 1) * Rnd + 1)
+        
+        ' Créer les sous-comptes
+        For k = 1 To numSousComptes
+            ' Générer un numéro de compte à 3 chiffres
+            numCompte = Int((999 - 100 + 1) * Rnd + 100)
+            ' Générer une devise aléatoire
+            Devise = devises(Int((UBound(devises) - LBound(devises) + 1) * Rnd + LBound(devises)))  ' Mise à jour pour fonctionner avec n'importe quelle taille de tableau
+            ' Générer une lettre aléatoire (A ou T)
+            lettre = lettres(Int((1 - 0 + 1) * Rnd))
             
-            ' Enregistrement des données de détail dans la feuille "detail"
-            Detail.Cells(categoryRowCounts(j), (j - 1) * 2 + 1).Value = Compte
-            Detail.Cells(categoryRowCounts(j), (j - 1) * 2 + 2).Value = Devise
+            ' Écrire les données dans la feuille
+            ws.Cells(i + k, 1).Value = numCompte
+            ws.Cells(i + k, 2).Value = Devise
+            ws.Cells(i + k, 3).Value = lettre
             
-            ' Augmentation du compteur de ligne pour la catégorie
-            categoryRowCounts(j) = categoryRowCounts(j) + 1
-        End If
-        Err.Clear
-        On Error GoTo 0
-    Next i
-
+            ' Générer des sommes aléatoires pour les colonnes D à V
+            For l = 4 To 22
+                ' Générer une somme aléatoire entre 1 et 10000
+                somme = Int((10000 - 1 + 1) * Rnd + 1)
+                ws.Cells(i + k, l).Value = somme
+            Next l
+        Next k
+        
+        ' Passer à la ligne suivante pour le prochain grand compte avec un saut de 3 lignes
+        i = i + numSousComptes + 4
+    Next j
 End Sub
 
-Sub GenererAnalyse()
 
-    Dim Detail As Worksheet
-    Dim Analyse As Worksheet
-    Dim Categories As Variant
-    Dim i As Long, j As Long, k As Long
+Sub AjouterTotaux()
+    ' Définir les variables
+    Dim ws As Worksheet
+    Dim startRow As Long
+    Dim endRow As Long
+    Dim totalRow As Long
+    Dim i As Long
+    Dim j As Integer
+    Dim coll As Collection
+    Dim item As Variant
+    Dim Devise As String
 
-    ' Assurez-vous que le nom de la feuille correspond
-    Set Detail = ThisWorkbook.Sheets("detail")
-    Set Analyse = ThisWorkbook.Sheets("analyse")
+    ' Assigner la feuille active à la variable ws
+    Set ws = ActiveSheet
 
-    ' Initialisation des tableaux
-    Categories = Array("forwardbond", "cat2", "cat3", "cat4", "cat5", "cat6", "cat7")
+    ' Créer une nouvelle collection
+    Set coll = New Collection
 
-    ' Efface les données actuelles
-    Analyse.Cells.ClearContents
+    ' Initialiser startRow à 2 (après le premier grand compte)
+    startRow = 2
 
-    ' Initialement, le premier compte sera écrit à la ligne 2
-    k = 2
+    ' Initialiser i à 2
+    i = 2
 
-    ' Pour chaque catégorie
-    For i = 1 To 7
-        ' Ecrire le nom de la catégorie
-        Analyse.Cells(k, 1).Value = Categories(i - 1)
-
-        ' Pour chaque compte dans cette catégorie
-        For j = 2 To 200
-            If Detail.Cells(j, (i - 1) * 2 + 1).Value <> "" Then
-                ' Ecrire le compte et la devise
-                k = k + 1
-                Analyse.Cells(k, 1).Value = Detail.Cells(j, (i - 1) * 2 + 1).Value
-                Analyse.Cells(k, 2).Value = Detail.Cells(j, (i - 1) * 2 + 2).Value
+    ' Parcourir chaque ligne de la feuille
+    While i <= ws.Cells(ws.Rows.Count, 1).End(xlUp).Row + 1
+        ' Vérifier si la cellule actuelle est un grand compte (si la cellule de la colonne B est vide) ou la dernière ligne
+        If ws.Cells(i, 2).Value = "" Or i = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row + 1 Then
+            ' Si c'est le dernier grand compte, définir endRow à la dernière ligne des données
+            If i = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row + 1 Then
+                endRow = i - 1
             Else
-                ' Si il n'y a plus de comptes dans cette catégorie, passer à la catégorie suivante
-                Exit For
+                endRow = i - 1 ' Assume there are 3 blank lines between grand compte
             End If
-        Next j
 
-        ' Sauter deux lignes avant d'écrire la prochaine catégorie
-        k = k + 3
-    Next i
+            ' Ajouter les totaux pour chaque devise
+            For Each item In coll
+                ' Insérer une ligne pour le total
+                totalRow = endRow + 1
+                Rows(totalRow).Insert Shift:=xlDown, CopyOrigin:=xlFormatFromLeftOrAbove
+                
+                ws.Cells(totalRow, 1).Value = "Total " & item
+                For j = 4 To 22
+                    ws.Cells(totalRow, j).FormulaR1C1 = "=SUMIF(R" & startRow & "C2:R" & endRow & "C2,""" & item & """,R" & startRow & "C" & j & ":R" & endRow & "C" & j & ")"
+                Next j
+                endRow = endRow + 1
+                i = i + 1
+            Next item
 
+            ' Réinitialiser la collection pour le prochain grand compte
+            Set coll = New Collection
+
+            ' Passer aux lignes qui ne sont pas vides
+            While ws.Cells(i, 1).Value = ""
+                i = i + 1
+            Wend
+
+            ' Définir startRow à la ligne du prochain grand compte
+            startRow = i
+        ElseIf ws.Cells(i, 2).Value <> "" Then
+            ' Ajouter la devise à notre collection s'il n'est pas déjà là
+            On Error Resume Next
+            coll.Add ws.Cells(i, 2).Value, ws.Cells(i, 2).Value
+            On Error GoTo 0
+        End If
+
+        ' Incrementer i
+        i = i + 1
+    Wend
 End Sub
-
